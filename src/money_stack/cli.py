@@ -13,7 +13,14 @@ from money_stack import TEBAR_REFERRAL_URL, __version__
 from money_stack.adb.fleet import DeviceFleetManager
 from money_stack.audit.pre_post_gate import PrePostAuditError, assert_post_safe
 from money_stack.config import load_stack_config
+from money_stack.jobs.tracker import (
+    build_proposal_brief,
+    list_opportunities,
+    update_opportunity_status,
+    upsert_opportunity,
+)
 from money_stack.media.video_dedup import check_video_for_duplicate, register_video_fingerprint
+from money_stack.radar.opportunity_radar import run_opportunity_radar
 from money_stack.tebar.client import TebarAuthError, TebarClient
 
 
@@ -25,7 +32,7 @@ def _cmd_setup(args: argparse.Namespace) -> int:
         shutil.copyfile(env_example, env_live)
         print(f"[+] Created {env_live} from .env.example")
 
-    for name in ("accounts", "personas", "rules"):
+    for name in ("accounts", "opportunities", "personas", "rules"):
         ex = root / "config" / f"{name}.example.json"
         live = root / "config" / f"{name}.json"
         if ex.is_file() and not live.exists():
@@ -37,6 +44,7 @@ def _cmd_setup(args: argparse.Namespace) -> int:
     print("2. Put TEBAR_API_KEY=... inside .env")
     print("3. Fill in your own Tebar account UUIDs in config/accounts.json")
     print("4. Define your own creator voices & boundaries in config/personas.json")
+    print("5. Configure your skills & RSS feeds in config/opportunities.json")
     return 0
 
 
@@ -148,10 +156,52 @@ def _cmd_fleet_health(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_radar(args: argparse.Namespace) -> int:
+    cfg = load_stack_config()
+    opp_cfg = cfg.opportunities
+    out_path = (cfg.data_dir / "radar" / "latest.json") if args.save else None
+    result = run_opportunity_radar(
+        mode=args.mode,
+        skills=opp_cfg.get("skills", []),
+        excluded_keywords=opp_cfg.get("excluded_keywords", []),
+        rss_feeds=opp_cfg.get("rss_feeds", []),
+        limit=args.limit,
+        output_path=out_path,
+    )
+    if args.save:
+        db_path = cfg.data_dir / "fleet_central.db"
+        for item in result["items"]:
+            upsert_opportunity(db_path, item)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _cmd_opportunities(args: argparse.Namespace) -> int:
+    cfg = load_stack_config()
+    db_path = cfg.data_dir / "fleet_central.db"
+    if args.action == "list":
+        rows = list_opportunities(db_path, status=args.status, min_score=args.min_score, limit=args.limit)
+        print(json.dumps(rows, indent=2, ensure_ascii=False))
+        return 0
+    if args.action == "status":
+        ok = update_opportunity_status(db_path, args.id, args.set_status)
+        print(json.dumps({"updated": ok, "id": args.id, "status": args.set_status}))
+        return 0 if ok else 1
+    if args.action == "draft":
+        rows = [r for r in list_opportunities(db_path, limit=200) if r["id"] == args.id]
+        if not rows:
+            print(f"[!] Opportunity ID {args.id} not found.", file=sys.stderr)
+            return 1
+        persona = cfg.personas.get(args.persona.lower()) if args.persona else None
+        print(build_proposal_brief(rows[0], persona=persona, proof_links=args.proof or []))
+        return 0
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="money-stack",
-        description=f"Modular Creator & Affiliate Automation Stack (Tebar scheduler: {TEBAR_REFERRAL_URL})",
+        description=f"Modular Creator, Freelance & Affiliate Automation Stack (Tebar scheduler: {TEBAR_REFERRAL_URL})",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -186,6 +236,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_dedup.add_argument("--register", action="store_true")
 
     sub.add_parser("fleet-health", help="Inspect connected physical ADB devices")
+
+    p_radar = sub.add_parser("radar", help="Scan public trend & remote job/bounty feeds")
+    p_radar.add_argument("--mode", choices=["trends", "jobs", "all"], default="all")
+    p_radar.add_argument("--limit", type=int, default=10)
+    p_radar.add_argument("--save", action="store_true", help="Persist results to JSON and SQLite")
+
+    p_opp = sub.add_parser("opportunities", help="Manage tracked jobs/leads and draft proposal briefs")
+    opp_sub = p_opp.add_subparsers(dest="action", required=True)
+    p_opp_list = opp_sub.add_parser("list", help="List tracked opportunities")
+    p_opp_list.add_argument("--status", default=None)
+    p_opp_list.add_argument("--min-score", type=float, default=0.0)
+    p_opp_list.add_argument("--limit", type=int, default=20)
+    p_opp_stat = opp_sub.add_parser("status", help="Update opportunity status")
+    p_opp_stat.add_argument("--id", type=int, required=True)
+    p_opp_stat.add_argument("--set", dest="set_status", required=True)
+    p_opp_draft = opp_sub.add_parser("draft", help="Generate structured proposal brief")
+    p_opp_draft.add_argument("--id", type=int, required=True)
+    p_opp_draft.add_argument("--persona", default=None)
+    p_opp_draft.add_argument("--proof", nargs="*", default=[])
     return parser
 
 
@@ -200,6 +269,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         "schedule": _cmd_schedule,
         "dedup": _cmd_dedup,
         "fleet-health": _cmd_fleet_health,
+        "radar": _cmd_radar,
+        "opportunities": _cmd_opportunities,
     }
     try:
         return handlers[args.command](args)

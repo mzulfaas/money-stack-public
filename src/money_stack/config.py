@@ -84,6 +84,7 @@ class StackConfig:
     tz_offset_hours: int = 7
     accounts: Dict[str, AccountPolicy] = field(default_factory=dict)
     personas: Dict[str, PersonaProfile] = field(default_factory=dict)
+    opportunities: Dict[str, Any] = field(default_factory=dict)
     rules: Dict[str, Any] = field(default_factory=lambda: dict(DEFAULT_RULES))
 
 
@@ -168,9 +169,10 @@ def load_stack_config(
     root_dir: Optional[Path] = None,
     accounts_path: Optional[Path] = None,
     personas_path: Optional[Path] = None,
+    opportunities_path: Optional[Path] = None,
     rules_path: Optional[Path] = None,
 ) -> StackConfig:
-    """Resolves directories, account policies, personas, and lint rules."""
+    """Resolves directories, account policies, personas, opportunities, and lint rules."""
     resolved_root = (root_dir or Path.cwd()).resolve()
     load_dotenv(resolved_root / ".env")
 
@@ -188,6 +190,9 @@ def load_stack_config(
     if resolved_personas.is_file():
         personas = parse_personas_payload(_read_json(resolved_personas))
 
+    resolved_opps = opportunities_path or (config_dir / "opportunities.json")
+    opportunities: Dict[str, Any] = _read_json(resolved_opps) if resolved_opps.is_file() else {}
+
     resolved_rules = rules_path or (config_dir / "rules.json")
     rules = dict(DEFAULT_RULES)
     if resolved_rules.is_file():
@@ -201,5 +206,6 @@ def load_stack_config(
         tz_offset_hours=tz_offset,
         accounts=accounts,
         personas=personas,
+        opportunities=opportunities,
         rules=rules,
     )

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "note": "Configure your own skills, exclusions, and public RSS/Atom job/bounty feeds. Copy to config/opportunities.json via `money-stack setup`.",
+  "skills": [
+    "python",
+    "automation",
+    "scraping",
+    "playwright",
+    "fastapi",
+    "flutter",
+    "adb"
+  ],
+  "excluded_keywords": [
+    "unpaid",
+    "volunteer",
+    "crypto casino"
+  ],
+  "rss_feeds": [
+    {
+      "name": "weworkremotely_programming",
+      "url": "https://weworkremotely.com/categories/remote-programming-jobs.rss"
+    },
+    {
+      "name": "remoteok_python",
+      "url": "https://remoteok.com/remote-python-jobs.rss"
+    }
+  ]
+}

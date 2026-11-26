@@ -8,6 +8,7 @@
 
 # User-specific live configs (keep *.example.json tracked)
 config/accounts.json
+config/opportunities.json
 config/personas.json
 config/rules.json
 
