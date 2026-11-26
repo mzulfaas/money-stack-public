@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "scheduler_provider": "tebar",
+  "scheduler_signup_url": "https://tebar.app/?ref=BLASTER",
+  "accounts": {
+    "00000000-0000-4000-8000-000000000001": {
+      "platform": "threads",
+      "handle": "@tech_creator_example",
+      "shortcode": "THR_TECH",
+      "daily_cap": 4,
+      "min_interval_m": 120,
+      "language": "en",
+      "monetization": "amazon_associates",
+      "no_selling": false,
+      "blocked_domains": ["s.shopee.co.id", "shope.ee"],
+      "forbidden_keywords": ["game-changer", "holy grail"]
+    },
+    "00000000-0000-4000-8000-000000000002": {
+      "platform": "instagram",
+      "handle": "@home_gear_id_example",
+      "shortcode": "IG_HOMEID",
+      "daily_cap": 3,
+      "min_interval_m": 180,
+      "language": "id",
+      "monetization": "shopee_affiliate",
+      "no_selling": false,
+      "blocked_domains": ["amazon.com", "amzn.to"],
+      "forbidden_keywords": []
+    },
+    "00000000-0000-4000-8000-000000000003": {
+      "platform": "instagram",
+      "handle": "@pure_editorial_example",
+      "shortcode": "IG_EDITORIAL",
+      "daily_cap": 2,
+      "min_interval_m": 240,
+      "language": "en",
+      "no_selling": true,
+      "blocked_domains": ["s.shopee.co.id", "amzn.to", "amazon.com"],
+      "forbidden_keywords": ["promo", "discount", "link in bio"]
+    },
+    "00000000-0000-4000-8000-000000000004": {
+      "platform": "tiktok",
+      "handle": "@creator_shop_example",
+      "shortcode": "TT_SHOP",
+      "daily_cap": 2,
+      "min_interval_m": 240,
+      "language": "id",
+      "require_native_adb": true,
+      "blocked_via_scheduler": true,
+      "blocked_reason": "Native shopping cart anchor requires physical device composer."
+    }
+  }
+}

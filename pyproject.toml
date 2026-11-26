@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "money-stack-public"
+version = "0.1.0"
+description = "Modular Creator & Affiliate Automation Stack: Tebar.app scheduler + pacing/SubID guardrails, pre-publish content linter, 5-layer video dedup, SQLite WAL ledger, and Physical Android ADB + Vision OCR runner."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+media = ["Pillow>=10.0.0"]
+dev = ["pytest>=8.0.0", "Pillow>=10.0.0"]
+
+[project.scripts]
+money-stack = "money_stack.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

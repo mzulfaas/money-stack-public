@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "default_tz_offset_hours": 7,
+  "platform_char_limits": {
+    "twitter": 250,
+    "threads": 490,
+    "instagram": 2200,
+    "facebook": 5000
+  },
+  "forbidden_ai_slop_phrases": [
+    "game changer",
+    "game-changer",
+    "holy grail",
+    "in today's fast-paced world",
+    "as an ai",
+    "delve into",
+    "tapestry of",
+    "banyak yang nanya",
+    "banyak yg nanya",
+    "sering ditanya"
+  ],
+  "forbidden_punctuation": ["—", "–"],
+  "forbidden_emojis": ["✨"],
+  "tracked_shortlink_domains": ["s.shopee.co.id", "shope.ee"],
+  "require_zero_hashtag_platforms": ["threads"],
+  "allow_root_links": false
+}

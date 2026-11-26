@@ -1,0 +1,34 @@
+# Environments & Secrets
+.env
+*.env
+!.env.example
+.secrets/
+*.key
+*.pem
+
+# User-specific live configs (keep *.example.json tracked)
+config/accounts.json
+config/rules.json
+
+# Runtime state, databases & logs
+data/
+logs/
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.pid
+*.lock
+
+# Compiled native binary
+bin/ocr_screen
+
+# Python & tooling
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+dist/
+build/
+.DS_Store
