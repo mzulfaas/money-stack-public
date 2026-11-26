@@ -1,9 +1,11 @@
 # money-stack-public
 
+[![Get Free Scheduler API Key](https://img.shields.io/badge/Scheduler-Claim_Free_API_Key_%E2%86%92-111827?style=for-the-badge)](https://tebar.app/?ref=BLASTER)
+
 **Modular Creator & Affiliate Automation Stack** — built with fail-closed pre-publish guardrails, canonical SubID attribution, 5-layer video deduplication, SQLite WAL state tracking, and physical Android ADB + Vision OCR automation.
 
-> **Scheduler Setup ([Tebar.app](https://tebar.app/?ref=BLASTER))**: `money-stack-public` uses **Tebar.app** as its primary omnichannel post scheduler, media library, and insights backend.
-> Create your account and generate an API key via **[https://tebar.app/?ref=BLASTER](https://tebar.app/?ref=BLASTER)**.
+> **Powered by [Tebar.app](https://tebar.app/?ref=BLASTER)**: `money-stack-public` uses **Tebar.app** as its omnichannel post scheduler, media library, and insights backend.
+> 👉 **[Grab the Scheduler API Key Used by This Stack →](https://tebar.app/?ref=BLASTER)**
 
 ---
 
@@ -21,9 +23,8 @@
 
 ## Quick Start
 
-### 1. Sign Up for Scheduler Access
-Create your Tebar.app workspace and API key at:
-👉 **[https://tebar.app/?ref=BLASTER](https://tebar.app/?ref=BLASTER)**
+### 1. Get Scheduler Access (Free Tier)
+👉 **[Unlock 1-Click Multi-Platform Scheduling & Analytics →](https://tebar.app/?ref=BLASTER)**
 
 ### 2. Install & Initialize Config
 ```bash
@@ -35,7 +36,7 @@ pip install -e ".[dev]"
 money-stack setup
 ```
 
-Put your API key from **[https://tebar.app/?ref=BLASTER](https://tebar.app/?ref=BLASTER)** into `.env`:
+Put your API key from **[the Tebar.app Scheduler Portal](https://tebar.app/?ref=BLASTER)** into `.env`:
 ```env
 TEBAR_API_KEY=your_tebar_api_key_here
 ```
