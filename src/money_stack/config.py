@@ -42,13 +42,27 @@ DEFAULT_RULES: Dict[str, Any] = {
 
 
 @dataclass(frozen=True)
+class PersonaProfile:
+    """User-defined creator voice, themes, and forbidden vocabulary."""
+
+    name: str
+    archetype: str = ""
+    language: str = "en"
+    cadence: str = ""
+    core_themes: Tuple[str, ...] = ()
+    forbidden_words: Tuple[str, ...] = ()
+    formatting_rules: Tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class AccountPolicy:
-    """Per-account publishing, pacing, and monetization policy."""
+    """Per-account publishing, pacing, persona, and monetization policy."""
 
     account_id: str
     platform: str
     handle: str
     shortcode: str
+    persona: Optional[str] = None
     daily_cap: int = 3
     min_interval_m: int = 180
     language: str = "en"
@@ -69,6 +83,7 @@ class StackConfig:
     data_dir: Path
     tz_offset_hours: int = 7
     accounts: Dict[str, AccountPolicy] = field(default_factory=dict)
+    personas: Dict[str, PersonaProfile] = field(default_factory=dict)
     rules: Dict[str, Any] = field(default_factory=lambda: dict(DEFAULT_RULES))
 
 
@@ -95,6 +110,29 @@ def _read_json(path: Path) -> Dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
+def parse_personas_payload(payload: Dict[str, Any]) -> Dict[str, PersonaProfile]:
+    """Parses raw JSON persona definitions into PersonaProfile instances."""
+    raw_personas = payload.get("personas", {})
+    parsed: Dict[str, PersonaProfile] = {}
+    if not isinstance(raw_personas, dict):
+        return parsed
+
+    for name, item in raw_personas.items():
+        if not isinstance(item, dict):
+            continue
+        clean_name = name.strip().lower()
+        parsed[clean_name] = PersonaProfile(
+            name=clean_name,
+            archetype=str(item.get("archetype", "")),
+            language=str(item.get("language", "en")).lower(),
+            cadence=str(item.get("cadence", "")),
+            core_themes=tuple(str(t) for t in item.get("core_themes", [])),
+            forbidden_words=tuple(str(w).lower() for w in item.get("forbidden_words", [])),
+            formatting_rules=tuple(str(r) for r in item.get("formatting_rules", [])),
+        )
+    return parsed
+
+
 def parse_accounts_payload(payload: Dict[str, Any]) -> Dict[str, AccountPolicy]:
     """Parses raw JSON account registry into normalized AccountPolicy instances."""
     raw_accounts = payload.get("accounts", {})
@@ -106,11 +144,13 @@ def parse_accounts_payload(payload: Dict[str, Any]) -> Dict[str, AccountPolicy]:
         if not isinstance(item, dict):
             continue
         clean_id = account_id.strip().lower()
+        persona_val = item.get("persona")
         parsed[clean_id] = AccountPolicy(
             account_id=clean_id,
             platform=str(item.get("platform", "unknown")).lower(),
             handle=str(item.get("handle", f"acc_{clean_id[:8]}")),
             shortcode=str(item.get("shortcode", f"GEN_{clean_id[:6].upper()}")),
+            persona=str(persona_val).strip().lower() if persona_val else None,
             daily_cap=int(item.get("daily_cap", 3)),
             min_interval_m=int(item.get("min_interval_m", 180)),
             language=str(item.get("language", "en")).lower(),
@@ -127,9 +167,10 @@ def parse_accounts_payload(payload: Dict[str, Any]) -> Dict[str, AccountPolicy]:
 def load_stack_config(
     root_dir: Optional[Path] = None,
     accounts_path: Optional[Path] = None,
+    personas_path: Optional[Path] = None,
     rules_path: Optional[Path] = None,
 ) -> StackConfig:
-    """Resolves directories, account policies, and lint rules."""
+    """Resolves directories, account policies, personas, and lint rules."""
     resolved_root = (root_dir or Path.cwd()).resolve()
     load_dotenv(resolved_root / ".env")
 
@@ -141,6 +182,11 @@ def load_stack_config(
     accounts: Dict[str, AccountPolicy] = {}
     if resolved_accounts.is_file():
         accounts = parse_accounts_payload(_read_json(resolved_accounts))
+
+    resolved_personas = personas_path or (config_dir / "personas.json")
+    personas: Dict[str, PersonaProfile] = {}
+    if resolved_personas.is_file():
+        personas = parse_personas_payload(_read_json(resolved_personas))
 
     resolved_rules = rules_path or (config_dir / "rules.json")
     rules = dict(DEFAULT_RULES)
@@ -154,5 +200,6 @@ def load_stack_config(
         data_dir=data_dir,
         tz_offset_hours=tz_offset,
         accounts=accounts,
+        personas=personas,
         rules=rules,
     )

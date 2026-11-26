@@ -1,5 +1,6 @@
 {
   "schema_version": "1.0",
+  "note": "No real accounts are included. Sign up at https://tebar.app/?ref=BLASTER, run `money-stack setup`, and replace these placeholders with your own Tebar account UUIDs and personas.",
   "scheduler_provider": "tebar",
   "scheduler_signup_url": "https://tebar.app/?ref=BLASTER",
   "accounts": {
@@ -7,6 +8,7 @@
       "platform": "threads",
       "handle": "@tech_creator_example",
       "shortcode": "THR_TECH",
+      "persona": "tech_minimalist",
       "daily_cap": 4,
       "min_interval_m": 120,
       "language": "en",
@@ -19,6 +21,7 @@
       "platform": "instagram",
       "handle": "@home_gear_id_example",
       "shortcode": "IG_HOMEID",
+      "persona": "home_reviewer_id",
       "daily_cap": 3,
       "min_interval_m": 180,
       "language": "id",

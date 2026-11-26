@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from money_stack import TEBAR_REFERRAL_URL
-from money_stack.config import AccountPolicy, StackConfig
+from money_stack.config import AccountPolicy, PersonaProfile, StackConfig
 from money_stack.storage.fleet_db import get_db_connection
 from money_stack.tebar import FatalPacingViolation, PacingSubidGuard, TebarAuthError, TebarClient
 
@@ -19,6 +19,7 @@ def _sample_config(tmp_path: Path) -> StackConfig:
             platform="threads",
             handle="@tech_creator_example",
             shortcode="THR_TECH",
+            persona="tech_minimalist",
             daily_cap=2,
             min_interval_m=120,
             language="en",
@@ -46,6 +47,13 @@ def _sample_config(tmp_path: Path) -> StackConfig:
         config_dir=tmp_path / "config",
         data_dir=tmp_path / "data",
         accounts=accounts,
+        personas={
+            "tech_minimalist": PersonaProfile(
+                name="tech_minimalist",
+                archetype="Pragmatic Builder",
+                forbidden_words=("revolutionary",),
+            )
+        },
     )
 
 
@@ -79,6 +87,10 @@ def test_pacing_guard_blocks_policy_and_spacing_violations(tmp_path: Path):
     # Forbidden keyword
     with pytest.raises(FatalPacingViolation, match="NICHE_FIREWALL"):
         guard.validate_and_sanitize("acc-threads", "Best gambling site", is_affiliate=False)
+
+    # Persona forbidden word
+    with pytest.raises(FatalPacingViolation, match="PERSONA_FIREWALL"):
+        guard.validate_and_sanitize("acc-threads", "This revolutionary keyboard changed everything", is_affiliate=False)
 
     # Pacing violation (30m < 120m)
     with pytest.raises(FatalPacingViolation, match="PACING_VIOLATION"):

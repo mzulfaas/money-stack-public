@@ -25,7 +25,7 @@ def _cmd_setup(args: argparse.Namespace) -> int:
         shutil.copyfile(env_example, env_live)
         print(f"[+] Created {env_live} from .env.example")
 
-    for name in ("accounts", "rules"):
+    for name in ("accounts", "personas", "rules"):
         ex = root / "config" / f"{name}.example.json"
         live = root / "config" / f"{name}.json"
         if ex.is_file() and not live.exists():
@@ -35,7 +35,8 @@ def _cmd_setup(args: argparse.Namespace) -> int:
     print("\nNext steps:")
     print(f"1. Sign up & get your Tebar.app API key: {TEBAR_REFERRAL_URL}")
     print("2. Put TEBAR_API_KEY=... inside .env")
-    print("3. Customize config/accounts.json with your Tebar account UUIDs and policies")
+    print("3. Fill in your own Tebar account UUIDs in config/accounts.json")
+    print("4. Define your own creator voices & boundaries in config/personas.json")
     return 0
 
 
@@ -52,11 +53,30 @@ def _cmd_accounts(args: argparse.Namespace) -> int:
             "platform": acc.platform,
             "handle": acc.handle,
             "shortcode": acc.shortcode,
+            "persona": acc.persona,
             "daily_cap": acc.daily_cap,
             "min_interval_m": acc.min_interval_m,
             "blocked_via_scheduler": acc.blocked_via_scheduler,
         }
         for acc in cfg.accounts.values()
+    ]
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _cmd_personas(args: argparse.Namespace) -> int:
+    cfg = load_stack_config()
+    summary = [
+        {
+            "name": p.name,
+            "archetype": p.archetype,
+            "language": p.language,
+            "cadence": p.cadence,
+            "core_themes": list(p.core_themes),
+            "forbidden_words": list(p.forbidden_words),
+            "formatting_rules": list(p.formatting_rules),
+        }
+        for p in cfg.personas.values()
     ]
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     return 0
@@ -141,6 +161,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_acc = sub.add_parser("accounts", help="List local account policies or live Tebar accounts")
     p_acc.add_argument("--live", action="store_true", help="Query live Tebar.app API")
 
+    sub.add_parser("personas", help="List user-defined creator personas from config/personas.json")
+
     p_audit = sub.add_parser("audit", help="Run pre-publish linter on candidate text")
     p_audit.add_argument("--platform", default="threads")
     p_audit.add_argument("--text", nargs="+", required=True)
@@ -173,6 +195,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     handlers = {
         "setup": _cmd_setup,
         "accounts": _cmd_accounts,
+        "personas": _cmd_personas,
         "audit": _cmd_audit,
         "schedule": _cmd_schedule,
         "dedup": _cmd_dedup,

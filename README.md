@@ -31,7 +31,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Creates .env, config/accounts.json, and config/rules.json from *.example.*
+# Creates .env, config/accounts.json, config/personas.json, and config/rules.json from *.example.*
 money-stack setup
 ```
 
@@ -40,16 +40,21 @@ Put your API key from **[https://tebar.app/?ref=BLASTER](https://tebar.app/?ref=
 TEBAR_API_KEY=your_tebar_api_key_here
 ```
 
-Edit `config/accounts.json` with your Tebar account UUIDs, shortcodes, daily caps, and domain/niche rules (see [config/accounts.example.json](config/accounts.example.json)).
+> **Bring Your Own Accounts & Personas:** This repository ships with **zero pre-filled real accounts or personal personas**. After running `money-stack setup`:
+> 1. Add your own Tebar account UUIDs, handles, shortcodes, and pacing limits in `config/accounts.json` (see [config/accounts.example.json](config/accounts.example.json)).
+> 2. Define your own creator voices, cadence, themes, and forbidden words in `config/personas.json` (see [config/personas.example.json](config/personas.example.json)) and link them via `"persona"` in `config/accounts.json`.
 
 ---
 
 ## CLI Usage
 
 ```bash
-# List configured account policies (or pass --live to query Tebar.app)
+# List your configured account policies (or pass --live to query Tebar.app)
 money-stack accounts
 money-stack accounts --live
+
+# List your user-defined personas
+money-stack personas
 
 # Lint a 2-step barbell thread before publishing
 money-stack audit --platform threads \

@@ -103,6 +103,14 @@ class PacingSubidGuard:
                     f"NICHE_FIREWALL ({policy.handle}): Forbidden keyword '{kw}' detected."
                 )
 
+        if policy.persona and policy.persona in self.config.personas:
+            persona = self.config.personas[policy.persona]
+            for kw in persona.forbidden_words:
+                if kw in combined:
+                    raise FatalPacingViolation(
+                        f"PERSONA_FIREWALL ({policy.handle} / {persona.name}): Forbidden word '{kw}' detected."
+                    )
+
     def assert_links_alive(self, texts: Sequence[Optional[str]]) -> None:
         if self.url_verifier is None:
             return
